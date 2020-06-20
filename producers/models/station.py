@@ -33,7 +33,7 @@ class Station(Producer):
             .replace("'", "")
         )
 
-        topic_name = f"cta_station_{station_name}" 
+        topic_name = f"cta_sn_{station_name}" 
         super().__init__(
             topic_name,
             key_schema=Station.key_schema,

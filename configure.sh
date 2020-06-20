@@ -45,11 +45,13 @@ TOPIC_LIST="\"list\": "
 
 # create topic names from stations
 for ST in ${STATIONS}; do
-	TOPIC_LIST=${TOPIC_LIST}," \"cta_station_${ST}\""
+	TOPIC_LIST=${TOPIC_LIST}," \"cta_sn_${ST}\""
 done
 
-#TODO create topic names from turnstiles
-#...
+# create topic names from turnstiles
+for TS in ${STATIONS}; do
+	TOPIC_LIST=${TOPIC_LIST}," \"cta_te_${ST}\""
+done
 
 # adjust start and end of topic list
 TOPIC_LIST=$(echo ${TOPIC_LIST} | sed -e "s/\,/\[/")
