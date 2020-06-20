@@ -1,0 +1,5 @@
+startup/**
+startup.sh
+**/*.sw?
+.tempfile
+.workspace-config.json
