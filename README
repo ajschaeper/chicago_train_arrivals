@@ -1,5 +1,17 @@
+################################################################################
+### INITIALIZE PROJECT
+################################################################################
 
+### CONFIG
 To initialize, run
 $ ./configure.sh
 
+################################################################################
+### TEMPORARY STUFF (remove me...)
+################################################################################
 
+### TODO
+# add execution of create_topics.py in configure.sh
+# evaluate enum types for arrival.status and/or weather.status 
+
+### EOF
