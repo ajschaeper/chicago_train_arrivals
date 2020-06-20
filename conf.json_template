@@ -1,0 +1,25 @@
+{
+	"schema_registry": {
+		"url": "localhost:8081"
+	},
+	"zookeeper": {
+		"url": "localhost:2181"
+	},
+	"kafka": {
+		"broker": {
+			"url": "localhost:9092",
+			"topics": {
+				"default_config": {
+					"num_partitions": 4,
+					"replication_factor": 1
+				},
+				__topic_list__
+			}
+		
+		},
+		"producer": {
+			"client.id": "cta_producer",
+			"compression.type": "none"
+		}
+	}
+}

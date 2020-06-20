@@ -9,7 +9,7 @@ with open("conf.json", "r") as fd:
     conf = json.load(fd)
 
 BROKER_URL = conf["kafka"]["broker"]["url"]
-TOPICS_TOBE = conf["kafka"]["broker"]["topics"].keys()
+TOPICS_TOBE = conf["kafka"]["broker"]["topics"]["list"]
 
 def topic_exists(client, topic_name):
     """Checks if the given topic exists"""
@@ -22,7 +22,7 @@ def create_topic(client, topic_name):
         [
             NewTopic(
                 topic = topic_name,
-                **conf["kafka"]["broker"]["topics"][topic_name]
+                **conf["kafka"]["broker"]["topics"]["default_config"]
             )
         ]
     )
