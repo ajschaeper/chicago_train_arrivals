@@ -10,8 +10,12 @@ from confluent_kafka.avro import AvroProducer, CachedSchemaRegistryClient
 
 logger = logging.getLogger(__name__)
 
-with open(f"{Path(__file__).parents[0]}/../../conf.json") as fd:
+with open(f"{Path(__file__).parents[0]}/../../conf.json", "r") as fd:
     conf = json.load(fd)
+
+NUM_PARTITIONS = conf["kafka"]["broker"]["topics"]["default_config"]["num_partitions"]
+NUM_REPLICAS =   conf["kafka"]["broker"]["topics"]["default_config"]["replication_factor"]
+
 
 class Producer:
     """Defines and provides common functionality amongst Producers"""
@@ -24,8 +28,8 @@ class Producer:
         topic_name,
         key_schema,
         value_schema=None,
-        num_partitions=1,
-        num_replicas=1,
+        num_partitions=NUM_PARTITIONS,
+        num_replicas=NUM_REPLICAS,
     ):
         """Initializes a Producer object with basic settings"""
         self.topic_name = topic_name

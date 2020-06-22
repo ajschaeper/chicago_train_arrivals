@@ -14,9 +14,6 @@ logger = logging.getLogger(__name__)
 with open(f"{Path(__file__).parents[0]}/../../conf.json", "r") as fd:
     conf = json.load(fd)
 
-NUM_PARTITIONS = conf["kafka"]["broker"]["topics"]["default_config"]["num_partitions"]
-NUM_REPLICAS =   conf["kafka"]["broker"]["topics"]["default_config"]["replication_factor"]
-
 class Station(Producer):
     """Defines a single station"""
 
@@ -38,8 +35,6 @@ class Station(Producer):
             topic_name,
             key_schema=Station.key_schema,
             value_schema=Station.value_schema, 
-            num_partitions=NUM_PARTITIONS,
-            num_replicas=NUM_REPLICAS,
         )
 
         self.station_id = int(station_id)

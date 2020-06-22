@@ -43,15 +43,25 @@ echo -n "Generating topic list... "
 # base string to con 
 TOPIC_LIST="\"list\": "
 
+### stations
+
 # create topic names from stations
 for ST in ${STATIONS}; do
 	TOPIC_LIST=${TOPIC_LIST}," \"cta_sn_${ST}\""
 done
 
+### turnstiles
+
 # create topic names from turnstiles
 for TS in ${STATIONS}; do
 	TOPIC_LIST=${TOPIC_LIST}," \"cta_te_${ST}\""
 done
+
+### weather
+
+# create topic for weather
+TOPIC_LIST=${TOPIC_LIST}," \"cta_weather\""
+
 
 # adjust start and end of topic list
 TOPIC_LIST=$(echo ${TOPIC_LIST} | sed -e "s/\,/\[/")
