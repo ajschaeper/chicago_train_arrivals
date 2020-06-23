@@ -1,13 +1,23 @@
 """Defines trends calculations for stations"""
 import logging
+import json
+from pathlib import Path
+from dataclasses import dataclass
 
 import faust
 
 
 logger = logging.getLogger(__name__)
 
+with open(f"{Path(__file__).parents[0]}/../conf.json", "r") as fd:
+    conf = json.load(fd)
+
+KAFKA_BROKER_URL = conf["kafka"]["broker"]["url"]
+TOPIC_NAME_INBOUND = "cta_stations"
+TOPIC_NAME_OUTBOUND = "cta_stations_formatted"
 
 # Faust will ingest records from Kafka in this format
+@dataclass
 class Station(faust.Record):
     stop_id: int
     direction_id: str
@@ -22,6 +32,7 @@ class Station(faust.Record):
 
 
 # Faust will produce records to Kafka in this format
+@dataclass
 class TransformedStation(faust.Record):
     station_id: int
     station_name: str
@@ -29,30 +40,42 @@ class TransformedStation(faust.Record):
     line: str
 
 
-# TODO: Define a Faust Stream that ingests data from the Kafka Connect stations topic and
-#   places it into a new topic with only the necessary information.
-app = faust.App("stations-stream", broker="kafka://localhost:9092", store="memory://")
-# TODO: Define the input Kafka Topic. Hint: What topic did Kafka Connect output to?
-# topic = app.topic("TODO", value_type=Station)
-# TODO: Define the output Kafka Topic
-# out_topic = app.topic("TODO", partitions=1)
-# TODO: Define a Faust Table
-#table = app.Table(
-#    # "TODO",
-#    # default=TODO,
-#    partitions=1,
-#    changelog_topic=out_topic,
-#)
+# init Faust app
+app = faust.App("stations-stream", broker=f"kafka://{KAFKA_BROKER_URL}", store="memory://")
 
+# define topics for inbound and outbound messages
+inb_topic = app.topic(TOPIC_NAME_INBOUND, value_type=Station)
+otb_topic = app.topic(TOPIC_NAME_OUTBOUND, partitions=1)
 
-#
-#
-# TODO: Using Faust, transform input `Station` records into `TransformedStation` records. Note that
-# "line" is the color of the station. So if the `Station` record has the field `red` set to true,
-# then you would set the `line` of the `TransformedStation` record to the string `"red"`
-#
-#
+# define table to make conversion
+table = app.Table(
+    "cta_stations_tbl_formatted",
+    default=TransformedStation,
+    partitions=1,
+    changelog_topic=otb_topic,
+)
 
+# upon inbound message, update table and trigger outbound message
+@app.agent(inb_topic)
+async def in_and_out(stations):
+    
+    # for each station event in scope (e.g. line color is not None)
+    async for st in stations.filter(lambda s: s.blue == True or s.red == True or s.green == True):
+
+        print(type(st))
+        print(st)
+
+        # populate table to yield output event
+        table[st.station_id] = TransformedStation(
+            station_id   = st.station_id,
+            station_name = st.station_name,
+            order        = st.order,
+            line         =  "blue" if st.blue == True else \
+                            "red" if st.red == True else \
+                            "green" if st.green == True else \
+                            "__error_unknown_line__"
+        )
+        print(f"Transformed station: {st.station_id}")
 
 if __name__ == "__main__":
     app.main()
