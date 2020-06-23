@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 with open(f"{Path(__file__).parents[0]}/../../conf.json", "r") as fd:
     conf = json.load(fd)
 
-REST_PROXY_URL = conf["rest_proxy"]["url"]
+REST_PROXY_URL = conf["kafka"]["rest_proxy"]["url"]
 
 WEATHER_TOPIC_NAME = "cta_weather" 
 

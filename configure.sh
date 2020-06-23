@@ -45,14 +45,14 @@ TOPIC_LIST="\"list\": "
 
 ### stations
 
-# create topic names from stations
+# create topics for each station
 for ST in ${STATIONS}; do
 	TOPIC_LIST=${TOPIC_LIST}," \"cta_sn_${ST}\""
 done
 
 ### turnstiles
 
-# create topic names from turnstiles
+# create topics from turnstiles
 for TS in ${STATIONS}; do
 	TOPIC_LIST=${TOPIC_LIST}," \"cta_te_${ST}\""
 done
