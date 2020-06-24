@@ -14,6 +14,7 @@ with open(f"{Path(__file__).parents[0]}/../conf.json", "r") as fd:
 
 
 KAFKA_CONNECT_URL = conf["kafka"]["connect"]["url"]
+SCHEMA_REGISTRY_URL = conf["schema_registry"]["url"]
 CONNECTOR_NAME = "stations"
 
 def configure_connector():
@@ -34,8 +35,10 @@ def configure_connector():
                 "connector.class": "io.confluent.connect.jdbc.JdbcSourceConnector",
                 "key.converter": "org.apache.kafka.connect.json.JsonConverter",
                 "key.converter.schemas.enable": "false",
+                "key.converter.schema.registry.url": SCHEMA_REGISTRY_URL,
                 "value.converter": "org.apache.kafka.connect.json.JsonConverter",
                 "value.converter.schemas.enable": "false",
+                "value.converter.schema.registry.url": SCHEMA_REGISTRY_URL,
                 "batch.max.rows": "500",
                 "connection.url": "jdbc:postgresql://localhost:5432/cta",
                 "connection.user": "cta_admin",
@@ -44,7 +47,7 @@ def configure_connector():
                 "mode": "incrementing",
                 "incrementing.column.name": "stop_id",
                 "topic.prefix": "cta.raw.",
-                "poll.interval.ms": "60000",
+                "poll.interval.ms": "604800000",
             }
         }),
     )
