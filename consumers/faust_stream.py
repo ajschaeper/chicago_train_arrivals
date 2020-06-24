@@ -13,8 +13,8 @@ with open(f"{Path(__file__).parents[0]}/../conf.json", "r") as fd:
     conf = json.load(fd)
 
 KAFKA_BROKER_URL = conf["kafka"]["broker"]["url"]
-TOPIC_NAME_INBOUND = "cta_stations"
-TOPIC_NAME_OUTBOUND = "cta_stations_formatted"
+TOPIC_NAME_INBOUND = "cta.raw.stations"
+TOPIC_NAME_OUTBOUND = "cta.stations"
 
 # Faust will ingest records from Kafka in this format
 @dataclass
@@ -41,7 +41,7 @@ class TransformedStation(faust.Record):
 
 
 # init Faust app
-app = faust.App("stations-stream", broker=f"kafka://{KAFKA_BROKER_URL}", store="memory://")
+app = faust.App("cta.streams.stations", broker=f"kafka://{KAFKA_BROKER_URL}", store="memory://")
 
 # define topics for inbound and outbound messages
 inb_topic = app.topic(TOPIC_NAME_INBOUND, value_type=Station)
@@ -49,7 +49,7 @@ otb_topic = app.topic(TOPIC_NAME_OUTBOUND, partitions=1)
 
 # define table to make conversion
 table = app.Table(
-    "cta_stations_tbl_formatted",
+    "cta.stations.tbl",
     default=TransformedStation,
     partitions=1,
     changelog_topic=otb_topic,

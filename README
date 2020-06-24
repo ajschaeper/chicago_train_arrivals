@@ -12,6 +12,7 @@ $ ./configure.sh
 
 ### TODO
 # add execution of create_topics.py in configure.sh
+# fix clean_topics.sh, probably with List[NewTopic]s
 # evaluate enum types for arrival.status and/or weather.status 
 
 ### EOF

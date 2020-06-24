@@ -1,6 +1,6 @@
 """Creates a turnstile data producer"""
 import logging
-import json
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from confluent_kafka import avro
@@ -11,16 +11,17 @@ from models.turnstile_hardware import TurnstileHardware
 
 logger = logging.getLogger(__name__)
 
-with open(f"{Path(__file__).parents[0]}/../../conf.json", "r") as fd:
-    conf = json.load(fd)
 
 class Turnstile(Producer):
     key_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/turnstile_key.json")
-    value_schema = avro.load( f"{Path(__file__).parents[0]}/schemas/turnstile_value.json")
+
+    value_schema = avro.load(
+       f"{Path(__file__).parents[0]}/schemas/turnstile_value.json"
+    )
 
     def __init__(self, station):
         """Create the Turnstile"""
-        station_name = (
+        self.station_name = (
             station.name.lower()
             .replace("/", "_and_")
             .replace(" ", "_")
@@ -29,9 +30,9 @@ class Turnstile(Producer):
         )
 
         super().__init__(
-            f"cta_te_{station_name}", 
+            'cta.turnstiles',
             key_schema=Turnstile.key_schema,
-            value_schema=Turnstile.value_schema, 
+            value_schema=Turnstile.value_schema,
         )
         self.station = station
         self.turnstile_hardware = TurnstileHardware(station)
@@ -39,15 +40,13 @@ class Turnstile(Producer):
     def run(self, timestamp, time_step):
         """Simulates riders entering through the turnstile."""
         num_entries = self.turnstile_hardware.get_entries(timestamp, time_step)
-        self.producer.producer(
-                topic=self.topic,
-                key={"timestamp": self.time_millis()},
-                key_schema=Trunstile.key_schema,
-                value_schema=Trunstile.value_schema,
+        for entry in range(num_entries):
+            self.producer.produce(
+                topic=f'cta.turnstiles',
+                key={"timestamp": int(self.time_millis())},
                 value={
                     "station_id": self.station.station_id,
                     "station_name": self.station.name,
-                    "line:": self.station.color
+                    "line": self.station.color.name
                 }
-        )
-
+            )

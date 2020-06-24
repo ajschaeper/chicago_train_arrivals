@@ -10,12 +10,14 @@ from confluent_kafka.avro import AvroProducer, CachedSchemaRegistryClient
 
 logger = logging.getLogger(__name__)
 
+
 with open(f"{Path(__file__).parents[0]}/../../conf.json", "r") as fd:
     conf = json.load(fd)
 
+SCHEMA_REGISTRY_URL = conf["schema_registry"]["url"]
+KAFKA_BROKER_URL = conf["kafka"]["broker"]["url"]
 NUM_PARTITIONS = conf["kafka"]["broker"]["topics"]["default_config"]["num_partitions"]
-NUM_REPLICAS =   conf["kafka"]["broker"]["topics"]["default_config"]["replication_factor"]
-
+NUM_REPLICAS = conf["kafka"]["broker"]["topics"]["default_config"]["replication_factor"]
 
 class Producer:
     """Defines and provides common functionality amongst Producers"""
@@ -24,61 +26,44 @@ class Producer:
     existing_topics = set([])
 
     def __init__(
-        self,
-        topic_name,
-        key_schema,
-        value_schema=None,
-        num_partitions=NUM_PARTITIONS,
-        num_replicas=NUM_REPLICAS,
+            self,
+            topic_name,
+            key_schema,
+            value_schema=None,
+            num_partitions=NUM_PARTITIONS,
+            num_replicas=NUM_REPLICAS,
     ):
         """Initializes a Producer object with basic settings"""
         self.topic_name = topic_name
         self.key_schema = key_schema
         self.value_schema = value_schema
         self.num_partitions = num_partitions
-        self.broker_properties = {
-            "bootstrap.servers": conf["kafka"]["broker"]["url"],
-            "compression.type": conf["kafka"]["producer"]["compression.type"],
-            "client.id": conf["kafka"]["producer"]["client.id"],
-            # "batch.size" 
-            # "linger.ms" 
-            # "acks"
-            # "retries"
-        }
+        self.num_replicas = num_replicas
 
-        self.schema_registry = CachedSchemaRegistryClient(conf["schema_registry"]["url"])
+        self.broker_properties = {
+            "bootstrap.servers": f"PLAINTEXT://{KAFKA_BROKER_URL}"
+        }
 
         # If the topic does not already exist, try to create it
         if self.topic_name not in Producer.existing_topics:
             self.create_topic()
             Producer.existing_topics.add(self.topic_name)
 
-        self.producer = AvroProducer(
-            self.broker_properties,
-            schema_registry = self.schema_registry
-        )
+        self.producer = AvroProducer(self.broker_properties,
+                                     schema_registry=CachedSchemaRegistryClient(SCHEMA_REGISTRY_URL),
+                                     default_key_schema=self.key_schema,
+                                     default_value_schema=self.value_schema
+                                     )
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
-        logger.info("""Automatic topic creation not supported 
-            Please follow these steps to safely create your topics:
-                1. cd $BASE_DIR
-                2. vim conf.json #define your topics in the config
-                3. python create_topics.py #create new topics, exitsting are left untouched""")
-
-    def time_millis(self):
-        return int(round(time.time() * 1000))
+        AdminClient(self.broker_properties).create_topics([NewTopic(self.topic_name, num_partitions=NUM_PARTITIONS)])
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""
-        #
-        #
-        # TODO: Write cleanup code for the Producer here
-        #
-        #
-        logger.info("producer close incomplete - skipping")
+        if self.producer is not None:
+            self.producer.flush()
 
-    # TODO function looks like duplicate
     def time_millis(self):
         """Use this function to get the key for Kafka Events"""
         return int(round(time.time() * 1000))

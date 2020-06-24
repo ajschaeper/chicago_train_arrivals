@@ -10,7 +10,7 @@
 			"url": "localhost:9092",
 			"topics": {
 				"default_config": {
-					"num_partitions": 4,
+					"num_partitions": 1,
 					"replication_factor": 1
 				},
 				__topic_list__
