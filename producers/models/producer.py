@@ -57,7 +57,8 @@ class Producer:
 
     def create_topic(self):
         """Creates the producer topic if it does not already exist"""
-        AdminClient(self.broker_properties).create_topics([NewTopic(self.topic_name, num_partitions=NUM_PARTITIONS)])
+        #AdminClient(self.broker_properties).create_topics([NewTopic(self.topic_name, num_partitions=NUM_PARTITIONS)])
+        print(f"Topics {self.topic_name} NOT GENERATED automatically. See README for details")
 
     def close(self):
         """Prepares the producer for exit by cleaning up the producer"""

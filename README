@@ -1,18 +1,49 @@
 ################################################################################
-### INITIALIZE PROJECT
+### RUN PROJECT
 ################################################################################
-
-### CONFIG
-To initialize, run
-$ ./configure.sh
-
-################################################################################
-### TEMPORARY STUFF (remove me...)
-################################################################################
-
-### TODO
-# add execution of create_topics.py in configure.sh
-# fix clean_topics.sh, probably with List[NewTopic]s
-# evaluate enum types for arrival.status and/or weather.status 
-
+#
+#
+# How to run the whole thing...
+#
+#
+### INITIALIZE
+#
+# Create config file and Kafka topics
+#
+./configure.sh
+#
+#
+### RUN SIMULATION
+#
+# Start Kafka Connect
+#
+echo -n "Starting station database integration... "
+cd producers/
+python connector.py
+echo "done"
+#
+# Start stream processors
+#
+cd ../consumers/
+echo -n "Starting station database integration... "
+python faust_stream.py worker &
+sleep 5
+python ksql.py &
+echo "done"
+#
+# Start simulation
+#
+echo -n "Starting simulation... "
+cd ../producers/
+python simulation.py &
+echo "running'
+#
+# Start server
+#
+echo -n "Starting server... "
+cd ../consumers/
+python server.py &
+echo "running"
+#
+#
 ### EOF
